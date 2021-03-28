@@ -1,0 +1,19 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wellspring3", "wellspring3.csproj", "{F530DB9C-0B2A-4462-ACF1-3C6D0CADB819}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+	Debug|Any CPU = Debug|Any CPU
+	ExportDebug|Any CPU = ExportDebug|Any CPU
+	ExportRelease|Any CPU = ExportRelease|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F530DB9C-0B2A-4462-ACF1-3C6D0CADB819}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F530DB9C-0B2A-4462-ACF1-3C6D0CADB819}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F530DB9C-0B2A-4462-ACF1-3C6D0CADB819}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{F530DB9C-0B2A-4462-ACF1-3C6D0CADB819}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{F530DB9C-0B2A-4462-ACF1-3C6D0CADB819}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{F530DB9C-0B2A-4462-ACF1-3C6D0CADB819}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+	EndGlobalSection
+EndGlobal
