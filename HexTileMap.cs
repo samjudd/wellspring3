@@ -11,13 +11,13 @@ public class HexTileMap : TileMap
   // https://www.reddit.com/r/godot/comments/dcd15r/godot_procedural_hex_map_generation/
 
   public HexLocation _hexDimensionsPx = new HexLocation(140, 120);
+  // tile that is selected by player currently
+  public HexLocation _selectedTile { get; private set; } = new HexLocation(0, 0);
 
   // array of custom hextile struct that can store hex properties
   private HexMap _map;
   // distance from center of hex to any corner
   private float _hexSizePx;
-  // tile that is selected by player currently
-  private HexLocation _selectedTile;
   // lines on map
   private List<Line2D> _mapLines = new List<Line2D>();
 
@@ -50,30 +50,22 @@ public class HexTileMap : TileMap
     }
   }
 
-  public override void _Process(float delta)
-  {
-    if (Input.IsActionJustPressed("select"))
-    {
-      SelectTile(WorldToOddQ(GetGlobalMousePosition()));
-    }
-    if (Input.IsActionJustPressed("pathfind"))
-    {
-      SelectTile(WorldToOddQ(GetGlobalMousePosition()));
-      clearMapLines();
-      ShowMovementRange(_selectedTile, 4);
-    }
-  }
-
-  private void SelectTile(HexLocation tile)
+  public System.Collections.Generic.Dictionary<HexLocation, PathToHex> SelectTile(HexLocation tile, int movement)
   {
     if (_map.Contains(tile))
     {
       // deselect previously selected tile (flags are for rotation)
       SetCell(_selectedTile.x, _selectedTile.y, _map.GetHexTile(_selectedTile).ID, true, false, true);
+      // clear lines from old tile
+      clearMapLines();
       // select new tile and update internal var
       SetCell(tile.x, tile.y, 2, true, false, true);
       _selectedTile = tile;
+      System.Collections.Generic.Dictionary<HexLocation, PathToHex> reachableHexes = ReachableHexes(tile, movement);
+      ShowMovementRange(reachableHexes);
+      return reachableHexes;
     }
+    return new System.Collections.Generic.Dictionary<HexLocation, PathToHex>();
   }
 
   private void HighlightTile(HexLocation tile)
@@ -81,9 +73,8 @@ public class HexTileMap : TileMap
     SetCell(tile.x, tile.y, 3, true, false, true);
   }
 
-  private void ShowMovementRange(HexLocation tile, int range)
+  private void ShowMovementRange(System.Collections.Generic.Dictionary<HexLocation, PathToHex> reachableHexes)
   {
-    System.Collections.Generic.Dictionary<HexLocation, PathToHex> reachableHexes = ReachableHexes(tile, range);
     foreach (HexLocation hex in reachableHexes.Keys)
     {
       //HighlightTile(hex);
@@ -135,12 +126,12 @@ public class HexTileMap : TileMap
     return hexPathInfo;
   }
 
-  private Vector2 OddQToWorld(HexLocation index)
+  public Vector2 OddQToWorld(HexLocation index)
   {
     return MapToWorld(Util.HexLocToVec2(index)) + Util.HexLocToVec2(_hexDimensionsPx) / 2f;
   }
 
-  private HexLocation WorldToOddQ(Vector2 location)
+  public HexLocation WorldToOddQ(Vector2 location)
   {
     return Util.CubeToOddQ(WorldToCube(location));
   }
@@ -158,7 +149,7 @@ public class HexTileMap : TileMap
     return Util.CubeRound(cubeLocationRaw);
   }
 
-  public List<HexLocation> GetNeighbors(HexLocation location)
+  private List<HexLocation> GetNeighbors(HexLocation location)
   {
     List<CubeHexLocation> neighborsCube = GetNeighborsCube(Util.OddQToCube(location));
     List<HexLocation> result = new List<HexLocation>(neighborsCube.Count);
@@ -168,7 +159,7 @@ public class HexTileMap : TileMap
     return result;
   }
 
-  public List<CubeHexLocation> GetNeighborsCube(CubeHexLocation cubeLocation)
+  private List<CubeHexLocation> GetNeighborsCube(CubeHexLocation cubeLocation)
   {
     // the 6 directions you can travel for a given hex in cube coordinates
     List<CubeHexLocation> cubeDirections = new List<CubeHexLocation>(6);
@@ -189,7 +180,8 @@ public class HexTileMap : TileMap
     }
     return result;
   }
-  public void PrintText(string text, Vector2 position)
+
+  private void PrintText(string text, Vector2 position)
   {
     Label label = new Label();
     label.Text = text;

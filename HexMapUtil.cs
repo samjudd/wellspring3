@@ -9,12 +9,14 @@ namespace HexMapUtil
     public HexLocation location;
     public CubeHexLocation cubeLocation;
     public int movement;
+    public int characterID;
     public HexTile(int ID, Vector2 location, int movement)
     {
       this.ID = ID;
       this.location = new HexLocation(Mathf.RoundToInt(location.x), Mathf.RoundToInt(location.y));
       this.cubeLocation = Util.OddQToCube(new HexLocation(Mathf.RoundToInt(location.x), Mathf.RoundToInt(location.y)));
       this.movement = movement;
+      this.characterID = 0;
     }
     public HexTile(int ID, HexLocation location, int movement)
     {
@@ -22,6 +24,7 @@ namespace HexMapUtil
       this.location = location;
       this.cubeLocation = Util.OddQToCube(location);
       this.movement = movement;
+      this.characterID = 0;
     }
     public HexTile(int ID, int x, int y, int movement)
     {
@@ -29,6 +32,7 @@ namespace HexMapUtil
       this.location = new HexLocation(x, y);
       this.cubeLocation = Util.OddQToCube(new HexLocation(x, y));
       this.movement = movement;
+      this.characterID = 0;
     }
   }
 
@@ -44,6 +48,31 @@ namespace HexMapUtil
     {
       this.x = Mathf.RoundToInt(vec.x);
       this.y = Mathf.RoundToInt(vec.y);
+    }
+    public static bool operator ==(HexLocation a, HexLocation b)
+    {
+      return a.x == b.x && a.y == b.y;
+    }
+
+    public static bool operator !=(HexLocation a, HexLocation b)
+    {
+      return !(a == b);
+    }
+
+    public override bool Equals(object obj)
+    {
+      if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+        return false;
+      else
+      {
+        HexLocation hl = (HexLocation)obj;
+        return hl == this;
+      }
+    }
+
+    public override int GetHashCode()
+    {
+      return (this.x, this.y).GetHashCode();
     }
   }
 
@@ -138,6 +167,7 @@ namespace HexMapUtil
 
   public static class Util
   {
+
     public static System.Collections.Generic.Dictionary<int, int> TileIDToMovement =
       new Dictionary<int, int>()
       {
@@ -148,6 +178,38 @@ namespace HexMapUtil
         {3, 2},     // movement highlighted grass tile
         {4, 4}      // forest tile 
       };
+
+    public static List<HexLocation> HexPathfind(HexLocation start, HexLocation destination, System.Collections.Generic.Dictionary<HexLocation, PathToHex> hexPaths)
+    {
+      HexLocation current = destination;
+      List<HexLocation> path = new List<HexLocation>();
+      path.Add(destination);
+      // trace path back from destination to start hex 
+      while (hexPaths[current].pathToHex != start)
+      {
+        current = hexPaths[current].pathToHex;
+        path.Add(current);
+      }
+      // reverse path so it goes from start to destination
+      path.Reverse();
+      return path;
+    }
+
+    public static int GetPathCost(List<HexLocation> path, System.Collections.Generic.Dictionary<HexLocation, PathToHex> hexPaths)
+    {
+      int cost = 0;
+      foreach (HexLocation hex in path)
+      {
+        cost += hexPaths[hex].costToHex;
+      }
+      return cost;
+    }
+
+    public static int GetPathCost(HexLocation start, HexLocation destination, System.Collections.Generic.Dictionary<HexLocation, PathToHex> hexPaths)
+    {
+      List<HexLocation> path = HexPathfind(start, destination, hexPaths);
+      return GetPathCost(path, hexPaths);
+    }
 
     public static Vector2 HexLocToVec2(HexLocation location)
     {

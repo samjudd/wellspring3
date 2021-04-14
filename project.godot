@@ -16,8 +16,12 @@ _global_script_class_icons={
 [application]
 
 config/name="wellspring3"
-run/main_scene="res://main.tscn"
+run/main_scene="res://game.tscn"
 config/icon="res://icon.png"
+
+[autoload]
+
+Main="*res://Main.cs"
 
 [editor_plugins]
 
