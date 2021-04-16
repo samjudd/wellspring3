@@ -3,36 +3,60 @@ using System.Collections.Generic;
 
 namespace HexMapUtil
 {
-  public struct HexTile
+
+  static class Constants
+  {
+    public const int NOCHARACTER = -1;
+  }
+
+  public class HexTile
   {
     public int ID;
     public HexLocation location;
     public CubeHexLocation cubeLocation;
-    public int movement;
+    public int baseMovement;
     public int characterID;
-    public HexTile(int ID, Vector2 location, int movement)
-    {
-      this.ID = ID;
-      this.location = new HexLocation(Mathf.RoundToInt(location.x), Mathf.RoundToInt(location.y));
-      this.cubeLocation = Util.OddQToCube(new HexLocation(Mathf.RoundToInt(location.x), Mathf.RoundToInt(location.y)));
-      this.movement = movement;
-      this.characterID = 0;
-    }
-    public HexTile(int ID, HexLocation location, int movement)
+    public int movement;
+
+    public HexTile(int ID, HexLocation location, int baseMovement)
     {
       this.ID = ID;
       this.location = location;
       this.cubeLocation = Util.OddQToCube(location);
-      this.movement = movement;
-      this.characterID = 0;
+      this.baseMovement = baseMovement;
+      this.characterID = Constants.NOCHARACTER;
+      movement = baseMovement;
     }
-    public HexTile(int ID, int x, int y, int movement)
+    public HexTile(int ID, Vector2 location, int baseMovement)
+    {
+      this.ID = ID;
+      this.location = new HexLocation(Mathf.RoundToInt(location.x), Mathf.RoundToInt(location.y));
+      this.cubeLocation = Util.OddQToCube(new HexLocation(Mathf.RoundToInt(location.x), Mathf.RoundToInt(location.y)));
+      this.baseMovement = baseMovement;
+      this.characterID = Constants.NOCHARACTER;
+      movement = baseMovement;
+    }
+    public HexTile(int ID, int x, int y, int baseMovement)
     {
       this.ID = ID;
       this.location = new HexLocation(x, y);
       this.cubeLocation = Util.OddQToCube(new HexLocation(x, y));
-      this.movement = movement;
-      this.characterID = 0;
+      this.baseMovement = baseMovement;
+      this.characterID = Constants.NOCHARACTER;
+      movement = baseMovement;
+    }
+
+    public void AddCharacter(int characterID)
+    {
+      this.characterID = characterID;
+      // tile is impassable
+      movement = 10000;
+    }
+
+    public void RemoveCharacter()
+    {
+      this.characterID = Constants.NOCHARACTER;
+      movement = baseMovement;
     }
   }
 
@@ -181,18 +205,23 @@ namespace HexMapUtil
 
     public static List<HexLocation> HexPathfind(HexLocation start, HexLocation destination, System.Collections.Generic.Dictionary<HexLocation, PathToHex> hexPaths)
     {
-      HexLocation current = destination;
-      List<HexLocation> path = new List<HexLocation>();
-      path.Add(destination);
-      // trace path back from destination to start hex 
-      while (hexPaths[current].pathToHex != start)
+      if (hexPaths.ContainsKey(destination))
       {
-        current = hexPaths[current].pathToHex;
-        path.Add(current);
+        HexLocation current = destination;
+        List<HexLocation> path = new List<HexLocation>();
+        path.Add(destination);
+        // trace path back from destination to start hex 
+        while (hexPaths[current].pathToHex != start)
+        {
+          current = hexPaths[current].pathToHex;
+          path.Add(current);
+        }
+        // reverse path so it goes from start to destination
+        path.Reverse();
+        return path;
       }
-      // reverse path so it goes from start to destination
-      path.Reverse();
-      return path;
+      else
+        return null;
     }
 
     public static int GetPathCost(List<HexLocation> path, System.Collections.Generic.Dictionary<HexLocation, PathToHex> hexPaths)

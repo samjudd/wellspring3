@@ -6,22 +6,13 @@ using System.Collections.Generic;
 
 public class HexTileMap : TileMap
 {
-  // https://www.reddit.com/r/godot/comments/cexsf6/is_it_possible_to_modify_tilemap_through_code/
-  // https://docs.godotengine.org/en/3.2/classes/class_tilemap.html
-  // https://www.reddit.com/r/godot/comments/dcd15r/godot_procedural_hex_map_generation/
-
   public HexLocation _hexDimensionsPx = new HexLocation(140, 120);
-  // tile that is selected by player currently
-  public HexLocation _selectedTile { get; private set; } = new HexLocation(0, 0);
-
   // array of custom hextile struct that can store hex properties
-  private HexMap _map;
+  public HexMap _map;
   // distance from center of hex to any corner
   private float _hexSizePx;
   // lines on map
   private List<Line2D> _mapLines = new List<Line2D>();
-
-  // occlusion (different vision ranges for different materials)
 
   public override void _Ready()
   {
@@ -50,45 +41,35 @@ public class HexTileMap : TileMap
     }
   }
 
-  public System.Collections.Generic.Dictionary<HexLocation, PathToHex> SelectTile(HexLocation tile, int movement)
+  public System.Collections.Generic.Dictionary<HexLocation, PathToHex> ShowMovementRange(HexLocation tile, int movement)
   {
     if (_map.Contains(tile))
     {
-      // deselect previously selected tile (flags are for rotation)
-      SetCell(_selectedTile.x, _selectedTile.y, _map.GetHexTile(_selectedTile).ID, true, false, true);
-      // clear lines from old tile
+      // clear lines from map
       clearMapLines();
-      // select new tile and update internal var
-      SetCell(tile.x, tile.y, 2, true, false, true);
-      _selectedTile = tile;
-      System.Collections.Generic.Dictionary<HexLocation, PathToHex> reachableHexes = ReachableHexes(tile, movement);
-      ShowMovementRange(reachableHexes);
+      // get which hexes can be reached
+      System.Collections.Generic.Dictionary<HexLocation, PathToHex> reachableHexes = ReachableHexes(tile, movement); ;
+
+      // draw lines for all reachable hexes
+      foreach (HexLocation hex in reachableHexes.Keys)
+        _mapLines.Add(ConnectHex(reachableHexes[hex].pathToHex, hex));
+
+      // return dictionary of reachable hexes
       return reachableHexes;
     }
     return new System.Collections.Generic.Dictionary<HexLocation, PathToHex>();
   }
 
-  private void HighlightTile(HexLocation tile)
+  public int GetCharacterID(Vector2 worldLocation)
   {
-    SetCell(tile.x, tile.y, 3, true, false, true);
+    HexLocation tile = WorldToOddQ(worldLocation);
+    return GetCharacterID(tile);
   }
 
-  private void ShowMovementRange(System.Collections.Generic.Dictionary<HexLocation, PathToHex> reachableHexes)
+  public int GetCharacterID(HexLocation tile)
   {
-    foreach (HexLocation hex in reachableHexes.Keys)
-    {
-      //HighlightTile(hex);
-      _mapLines.Add(ConnectHex(reachableHexes[hex].pathToHex, hex));
-    }
-  }
-
-  private void clearMapLines()
-  {
-    for (int i = 0; i < _mapLines.Count; i++)
-    {
-      _mapLines[i].QueueFree();
-    }
-    _mapLines.RemoveRange(0, _mapLines.Count);
+    // 0 is the ID for no character on a tile 
+    return _map.GetHexTile(tile).characterID;
   }
 
   private System.Collections.Generic.Dictionary<HexLocation, PathToHex> ReachableHexes(HexLocation hex, int range)
@@ -124,6 +105,20 @@ public class HexTileMap : TileMap
       }
     }
     return hexPathInfo;
+  }
+
+  private void HighlightTile(HexLocation tile)
+  {
+    SetCell(tile.x, tile.y, 3, true, false, true);
+  }
+
+  public void clearMapLines()
+  {
+    for (int i = 0; i < _mapLines.Count; i++)
+    {
+      _mapLines[i].QueueFree();
+    }
+    _mapLines.RemoveRange(0, _mapLines.Count);
   }
 
   public Vector2 OddQToWorld(HexLocation index)
