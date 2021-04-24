@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/grass_06_move.png-56e572a4bfd9803878c9acf0213e1603.stex"
+path="res://.import/character_info_placeholder.png-ae607c1b6e524a385da6d297341994bd.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resource/hexagon-pack/PNG/Tiles/Terrain/Grass/grass_06_move.png"
-dest_files=[ "res://.import/grass_06_move.png-56e572a4bfd9803878c9acf0213e1603.stex" ]
+source_file="res://resource/custom/hud/character_info_placeholder.png"
+dest_files=[ "res://.import/character_info_placeholder.png-ae607c1b6e524a385da6d297341994bd.stex" ]
 
 [params]
 

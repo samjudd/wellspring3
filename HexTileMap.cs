@@ -13,6 +13,8 @@ public class HexTileMap : TileMap
   private float _hexSizePx;
   // lines on map
   private List<Line2D> _mapLines = new List<Line2D>();
+  private List<HexLocation> _moveHightlight = new List<HexLocation>();
+  private List<HexLocation> _attackHightlight = new List<HexLocation>();
 
   public override void _Ready()
   {
@@ -35,7 +37,7 @@ public class HexTileMap : TileMap
       Vector2 tile = (Vector2)usedTiles[i];
       HexLocation tileHL = new HexLocation(tile);
       int tileID = GetCellv(tile);
-      _map[tileHL.x][tileHL.y] = new HexTile(tileID, tileHL, Util.TileIDToMovement[tileID]);
+      _map[tileHL.x][tileHL.y] = new HexTile(tileID, tileHL, Constants.TileIDToMovement[tileID]);
       Vector2 locationPx = OddQToWorld(tileHL);
       PrintText(tile.ToString(), locationPx);
     }
@@ -45,15 +47,16 @@ public class HexTileMap : TileMap
   {
     if (_map.Contains(tile))
     {
-      // clear lines from map
-      clearMapLines();
+      ClearMoveHighlights();
       // get which hexes can be reached
       System.Collections.Generic.Dictionary<HexLocation, PathToHex> reachableHexes = ReachableHexes(tile, movement); ;
 
-      // draw lines for all reachable hexes
+      // highlight all reachable hexes blue
       foreach (HexLocation hex in reachableHexes.Keys)
-        _mapLines.Add(ConnectHex(reachableHexes[hex].pathToHex, hex));
-
+      {
+        ChangeHex(hex, _map.GetHexTile(hex).ID + 1); // movement highlight is always +1
+        _moveHightlight.Add(hex);
+      }
       // return dictionary of reachable hexes
       return reachableHexes;
     }
@@ -68,8 +71,10 @@ public class HexTileMap : TileMap
 
   public int GetCharacterID(HexLocation tile)
   {
-    // 0 is the ID for no character on a tile 
-    return _map.GetHexTile(tile).characterID;
+    if (_map.GetHexTile(tile) != null)
+      return _map.GetHexTile(tile).characterID;
+    else
+      return Constants.NOCHARACTER;
   }
 
   private System.Collections.Generic.Dictionary<HexLocation, PathToHex> ReachableHexes(HexLocation hex, int range)
@@ -107,18 +112,27 @@ public class HexTileMap : TileMap
     return hexPathInfo;
   }
 
-  private void HighlightTile(HexLocation tile)
+  private void ChangeHex(HexLocation tile, int ID)
   {
-    SetCell(tile.x, tile.y, 3, true, false, true);
+    SetCell(tile.x, tile.y, ID);
   }
 
-  public void clearMapLines()
+  public void ClearMapLines()
   {
     for (int i = 0; i < _mapLines.Count; i++)
     {
       _mapLines[i].QueueFree();
     }
     _mapLines.RemoveRange(0, _mapLines.Count);
+  }
+
+  public void ClearMoveHighlights()
+  {
+    foreach (HexLocation hex in _moveHightlight)
+    {
+      ChangeHex(hex, _map.GetHexTile(hex).ID);
+    }
+    _moveHightlight.RemoveRange(0, _moveHightlight.Count);
   }
 
   public Vector2 OddQToWorld(HexLocation index)
@@ -174,6 +188,12 @@ public class HexTileMap : TileMap
         result.Add(potLocation);
     }
     return result;
+  }
+
+  private List<HexLocation> GetRing(HexLocation center, int radius)
+  {
+    // implement this https://www.redblobgames.com/grids/hexagons/#rings
+    return new List<HexLocation>();
   }
 
   private void PrintText(string text, Vector2 position)
