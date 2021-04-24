@@ -1,7 +1,9 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://map_tileset.tres" type="TileSet" id=1]
-[ext_resource path="res://HexTileMap.cs" type="Script" id=5]
+[ext_resource path="res://map/map_tileset.tres" type="TileSet" id=1]
+[ext_resource path="res://map/HexTileMap.cs" type="Script" id=5]
+
+
 
 [node name="HexTileMap" type="TileMap"]
 tile_set = ExtResource( 1 )

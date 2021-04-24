@@ -1,6 +1,6 @@
 [gd_scene load_steps=16 format=2]
 
-[ext_resource path="res://icon.png" type="Texture" id=1]
+[ext_resource path="res://resource/icon.png" type="Texture" id=1]
 [ext_resource path="res://resource/custom/hud/minimap_placeholder_15.png" type="Texture" id=2]
 [ext_resource path="res://resource/custom/hud/character_info_background.png" type="Texture" id=3]
 [ext_resource path="res://resource/Major_Mono_Display/MajorMonoDisplay-Regular.ttf" type="DynamicFontData" id=4]
@@ -8,7 +8,9 @@
 [ext_resource path="res://resource/custom/hud/action_point_full.png" type="Texture" id=6]
 [ext_resource path="res://resource/custom/hud/hit_point_bar_empty.png" type="Texture" id=7]
 [ext_resource path="res://resource/custom/hud/hit_point_bar_fill.png" type="Texture" id=8]
-[ext_resource path="res://HUD.cs" type="Script" id=9]
+[ext_resource path="res://ui/HUD.cs" type="Script" id=9]
+
+
 
 [sub_resource type="StyleBoxEmpty" id=1]
 
