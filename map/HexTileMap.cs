@@ -128,7 +128,7 @@ public class HexTileMap : TileMap
     return hexPathInfo;
   }
 
-  private void HighlightHexes()
+  public void HighlightHexes()
   {
     List<HexLocation> allTiles = _map.GetUsedTiles();
     // set all squares back to normal

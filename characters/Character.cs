@@ -157,11 +157,17 @@ public class Character : Sprite
     _hexMap.ClearMoveHighlights();
     _hexMap.ClearAttackHighlights();
     _hexMap.ClearMapLines();
+    _hexMap.HighlightHexes();
     _selected = false;
   }
 
   public void OnTurnStart()
   {
     _currentAP = _maxAP;
+  }
+
+  public void OnTurnEnd()
+  {
+    Deselect();
   }
 }

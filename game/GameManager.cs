@@ -57,8 +57,11 @@ public class GameManager : Node2D
       _turn += 1;
       _HUD.UpdateTurn(_turn);
       // update all characters onturnstart 
-      for (int i = 0; i < _characters.Count; i++)
-        _characters[i].OnTurnStart();
+      foreach (Character character in _characters)
+      {
+        character.OnTurnEnd();
+        character.OnTurnStart();
+      }
     }
   }
 }
