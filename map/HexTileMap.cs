@@ -45,22 +45,38 @@ public class HexTileMap : TileMap
 
   public System.Collections.Generic.Dictionary<HexLocation, PathToHex> ShowMovementRange(HexLocation tile, int movement)
   {
-    if (_map.Contains(tile))
-    {
-      ClearMoveHighlights();
-      // get which hexes can be reached
-      System.Collections.Generic.Dictionary<HexLocation, PathToHex> reachableHexes = ReachableHexes(tile, movement); ;
+    // get which hexes can be reached
+    System.Collections.Generic.Dictionary<HexLocation, PathToHex> reachableHexes = ReachableHexes(tile, movement); ;
 
-      // highlight all reachable hexes blue
-      foreach (HexLocation hex in reachableHexes.Keys)
-      {
-        ChangeHex(hex, _map.GetHexTile(hex).ID + 1); // movement highlight is always +1
-        _moveHightlight.Add(hex);
-      }
-      // return dictionary of reachable hexes
-      return reachableHexes;
-    }
-    return new System.Collections.Generic.Dictionary<HexLocation, PathToHex>();
+    // highlight all reachable hexes blue
+    _moveHightlight.Add(tile);
+    foreach (HexLocation hex in reachableHexes.Keys)
+      _moveHightlight.Add(hex);
+
+    HighlightHexes();
+    // return dictionary of reachable hexes
+    return reachableHexes;
+  }
+
+  public List<HexLocation> ShowAttackRange(HexLocation tile, List<int> ranges)
+  {
+    List<HexLocation> result = new List<HexLocation>();
+    foreach (int i in ranges)
+      result.AddRange(GetRing(tile, i));
+
+    foreach (HexLocation hex in result)
+      _attackHightlight.Add(hex);
+
+    HighlightHexes();
+    return result;
+  }
+
+  public void DrawPath(HexLocation start, HexLocation end, System.Collections.Generic.Dictionary<HexLocation, PathToHex> reachableHexes)
+  {
+    List<HexLocation> path = Util.HexPathfind(start, end, reachableHexes);
+    ConnectHex(start, path[0]);
+    for (int i = 1; i < path.Count; i++)
+      ConnectHex(path[i - 1], path[i]);
   }
 
   public int GetCharacterID(Vector2 worldLocation)
@@ -112,6 +128,23 @@ public class HexTileMap : TileMap
     return hexPathInfo;
   }
 
+  private void HighlightHexes()
+  {
+    List<HexLocation> allTiles = _map.GetUsedTiles();
+    // set all squares back to normal
+    foreach (HexLocation hex in allTiles)
+    {
+      ChangeHex(hex, _map.GetHexTile(hex).ID);
+    }
+    // move highlight ID is always + 1 from normal one
+    foreach (HexLocation hex in _moveHightlight)
+      ChangeHex(hex, _map.GetHexTile(hex).ID + 1);
+
+    // attack highlight ID is always + 2 from normal one
+    foreach (HexLocation hex in _attackHightlight)
+      ChangeHex(hex, _map.GetHexTile(hex).ID + 2);
+  }
+
   private void ChangeHex(HexLocation tile, int ID)
   {
     SetCell(tile.x, tile.y, ID);
@@ -128,11 +161,12 @@ public class HexTileMap : TileMap
 
   public void ClearMoveHighlights()
   {
-    foreach (HexLocation hex in _moveHightlight)
-    {
-      ChangeHex(hex, _map.GetHexTile(hex).ID);
-    }
     _moveHightlight.RemoveRange(0, _moveHightlight.Count);
+  }
+
+  public void ClearAttackHighlights()
+  {
+    _attackHightlight.RemoveRange(0, _attackHightlight.Count);
   }
 
   public Vector2 OddQToWorld(HexLocation index)
@@ -162,28 +196,17 @@ public class HexTileMap : TileMap
   {
     List<CubeHexLocation> neighborsCube = GetNeighborsCube(Util.OddQToCube(location));
     List<HexLocation> result = new List<HexLocation>(neighborsCube.Count);
-    for (int i = 0; i < neighborsCube.Count; i++)
-      result.Insert(i, Util.CubeToOddQ(neighborsCube[i]));
-
+    foreach (CubeHexLocation hex in neighborsCube)
+      result.Add(Util.CubeToOddQ(hex));
     return result;
   }
 
   private List<CubeHexLocation> GetNeighborsCube(CubeHexLocation cubeLocation)
   {
-    // the 6 directions you can travel for a given hex in cube coordinates
-    List<CubeHexLocation> cubeDirections = new List<CubeHexLocation>(6);
-    cubeDirections.Add(new CubeHexLocation(1, -1, 0));
-    cubeDirections.Add(new CubeHexLocation(1, 0, -1));
-    cubeDirections.Add(new CubeHexLocation(0, 1, -1));
-    cubeDirections.Add(new CubeHexLocation(-1, 1, 0));
-    cubeDirections.Add(new CubeHexLocation(-1, 0, 1));
-    cubeDirections.Add(new CubeHexLocation(0, -1, 1));
-
-    // maybe there is a cleaner way to do this???
-    List<CubeHexLocation> result = new List<CubeHexLocation>(cubeDirections.Count);
-    for (int i = 0; i < 6; i++)
+    List<CubeHexLocation> result = new List<CubeHexLocation>(Constants.CubeUnitVectors.Count);
+    for (int i = 0; i < Constants.CubeUnitVectors.Count; i++)
     {
-      CubeHexLocation potLocation = cubeDirections[i] + cubeLocation;
+      CubeHexLocation potLocation = Constants.CubeUnitVectors[i] + cubeLocation;
       if (_map.Contains(potLocation))
         result.Add(potLocation);
     }
@@ -192,8 +215,23 @@ public class HexTileMap : TileMap
 
   private List<HexLocation> GetRing(HexLocation center, int radius)
   {
-    // implement this https://www.redblobgames.com/grids/hexagons/#rings
-    return new List<HexLocation>();
+    if (radius > 0)
+    {
+      List<HexLocation> results = new List<HexLocation>();
+      CubeHexLocation ring = Util.OddQToCube(center) + (Constants.CubeUnitVectors[4] * radius);
+      for (int i = 0; i < 6; i++)
+      {
+        for (int j = 0; j < radius; j++)
+        {
+          if (_map.Contains(ring))
+            results.Add(Util.CubeToOddQ(ring));
+          ring = Constants.CubeUnitVectors[i] + ring;
+        }
+      }
+      return results;
+    }
+    else
+      return new List<HexLocation>();
   }
 
   private void PrintText(string text, Vector2 position)
@@ -210,6 +248,7 @@ public class HexTileMap : TileMap
     line.AddPoint(OddQToWorld(hex1));
     line.AddPoint(OddQToWorld(hex2));
     AddChild(line);
+    _mapLines.Add(line);
     return line;
   }
 }

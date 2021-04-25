@@ -14,7 +14,7 @@ public class GameManager : Node2D
   private HUD _HUD;
   private int _turn = 1;
 
-  private Character _selectedCharacter = null;
+  private Character _selectedCharacter = new Character(Constants.NOCHARACTER);
 
   public override void _Ready()
   {
@@ -32,16 +32,16 @@ public class GameManager : Node2D
     if (Input.IsActionJustPressed("select"))
     {
       int characterID = _map.GetCharacterID(GetGlobalMousePosition());
-      if (characterID != Constants.NOCHARACTER)
+      if (characterID != Constants.NOCHARACTER && characterID != _selectedCharacter.ID)
       {
         _selectedCharacter = _characters[characterID];
         _selectedCharacter.Select();
         _HUD.OnSelectCharacter(_selectedCharacter);
       }
-      else if (_selectedCharacter != null)
+      else if (_selectedCharacter.ID != Constants.NOCHARACTER)
       {
         _selectedCharacter.Deselect();
-        _selectedCharacter = null;
+        _selectedCharacter = new Character(Constants.NOCHARACTER);
         // need to hide character UI altogether when nothing is selected
       }
     }

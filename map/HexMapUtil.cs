@@ -87,5 +87,22 @@ namespace HexMapUtil
 
       return new CubeHexLocation(rx, ry, rz);
     }
+
+    public static void PrintHexList(List<HexLocation> hexList)
+    {
+      if (hexList.Count == 0)
+        GD.Print("[]");
+      else
+      {
+        string result = "[ ";
+        foreach (HexLocation hex in hexList)
+        {
+          result += hex.ToString() + ", ";
+        }
+        result = result.Substring(0, result.Length - 2);
+        result += " ]";
+        GD.Print(result);
+      }
+    }
   }
 }

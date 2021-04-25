@@ -10,6 +10,10 @@ public class Character : Sprite
   public int _maxHP = 100;
   [Export]
   public float _moveSpeedTilesPerSecond = 3.0f;
+  [Export]
+  public int _attackCost = 4;
+  [Export]
+  public int[] _attackRange = new int[] { 1 };
 
   public int HP
   {
@@ -23,11 +27,15 @@ public class Character : Sprite
     set { _currentAP = Mathf.Clamp(value, 0, _maxAP); }
   }
 
-  public static int _characterID = 0;
+  public int ID
+  {
+    get { return _characterID; }
+  }
+
+  private int _characterID = 0;
   public static int _XStart = 0;
   public static int _YStart = 0;
   public HexLocation _location { get; private set; }
-  public List<int> _attackRange = new List<int>();
 
   private HexTileMap _hexMap;
   private int _currentAP;
@@ -41,6 +49,9 @@ public class Character : Sprite
   private float _moveDuration = 1;
   private float _moveTime = 0;
   private bool _moving = false;
+
+  private HexLocation _previewHex;
+  private bool _selected = false;
 
   // need empty constructor for godot engine to instantiate with
   public Character() { }
@@ -61,27 +72,42 @@ public class Character : Sprite
 
     // set map to know location of this character
     _hexMap._map.GetHexTile(_location).AddCharacter(_characterID);
+
+    _previewHex = _location;
   }
 
   public override void _Process(float delta)
   {
+    // ############################## MOVEMENT ##############################
     if (_moving)
     {
       _moveTime += delta;
       Position = _moveStart.LinearInterpolate(_moveEnd, _moveTime / _moveDuration);
+      // single step of move is complete 
       if (Position.DistanceSquaredTo(_moveEnd) < 5)
       {
         Position = _moveEnd;
-        _moving = false;
         _moveTime = 0f;
-        // reselect character to recompute dijkstra showing movement
+        _moving = false;
+        // check if move is fully complete or not
         if (_moveQueue.Count == 0)
+        {
+          _hexMap.ClearMapLines();
+          Deselect();
           Select();
+        }
+        else
+          MoveSingleStep(_moveQueue.Dequeue());
       }
     }
-    else if (_moveQueue.Count != 0)
+
+    // ############################## MOVE PREVIEW ##############################
+    HexLocation mouseLocation = _hexMap.WorldToOddQ(GetGlobalMousePosition());
+    if (_selected && !_moving && _previewHex != mouseLocation && _movementRange.ContainsKey(mouseLocation))
     {
-      MoveSingleStep(_moveQueue.Dequeue());
+      _hexMap.ClearMapLines();
+      _hexMap.DrawPath(_location, mouseLocation, _movementRange);
+      _previewHex = mouseLocation;
     }
   }
 
@@ -95,8 +121,9 @@ public class Character : Sprite
       foreach (HexLocation hex in path)
         _currentAP -= _hexMap._map.GetHexTile(hex).movement;
       _moveQueue = new Queue<HexLocation>(path);
+      MoveSingleStep(_moveQueue.Dequeue());
+      return true;
     }
-    return true;
   }
 
   private void MoveSingleStep(HexLocation newLocation)
@@ -120,11 +147,17 @@ public class Character : Sprite
 
   public void Select()
   {
+    _selected = true;
     _movementRange = _hexMap.ShowMovementRange(_location, _currentAP);
+    if (_currentAP >= _attackCost)
+      _hexMap.ShowAttackRange(_location, new List<int>(_attackRange));
   }
   public void Deselect()
   {
     _hexMap.ClearMoveHighlights();
+    _hexMap.ClearAttackHighlights();
+    _hexMap.ClearMapLines();
+    _selected = false;
   }
 
   public void OnTurnStart()

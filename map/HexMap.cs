@@ -11,8 +11,18 @@ namespace HexMapUtil
       {
         this.Add(new List<HexTile>(y));
         for (int j = 0; j < y; j++)
-          this[i].Add(new HexTile(-1, x, y, 1000));
+          this[i].Add(new HexTile(-1, i, j, 1000));
       }
+    }
+
+    public List<HexLocation> GetUsedTiles()
+    {
+      List<HexLocation> result = new List<HexLocation>();
+      for (int i = 0; i < this.Count; i++)
+        for (int j = 0; j < this[i].Count; j++)
+          if (this[i][j].ID != Constants.NOTILE)
+            result.Add(this[i][j].location);
+      return result;
     }
 
     public HexTile GetHexTile(HexLocation location)

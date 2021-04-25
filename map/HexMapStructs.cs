@@ -7,6 +7,8 @@ namespace HexMapUtil
   {
     public const int NOCHARACTER = -1;
 
+    public const int NOTILE = -1;
+
     public static System.Collections.Generic.Dictionary<int, int> TileIDToMovement = new Dictionary<int, int>()
     {
       // {tile index in godot tileset, movement cost}
@@ -17,6 +19,16 @@ namespace HexMapUtil
       {3, 4},     // basic forest tile
       {4, 4},     // movement range forest tile
       {5, 4}      // attack range forest tile
+    };
+
+    public static List<CubeHexLocation> CubeUnitVectors = new List<CubeHexLocation>()
+    {
+      new CubeHexLocation(1, -1, 0),
+      new CubeHexLocation(1, 0, -1),
+      new CubeHexLocation(0, 1, -1),
+      new CubeHexLocation(-1, 1, 0),
+      new CubeHexLocation(-1, 0, 1),
+      new CubeHexLocation(0, -1, 1)
     };
   }
 
@@ -58,6 +70,11 @@ namespace HexMapUtil
     {
       return (this.x, this.y).GetHashCode();
     }
+
+    public override string ToString()
+    {
+      return "[ " + x.ToString() + ", " + y.ToString() + " ]";
+    }
   }
 
   public struct CubeHexLocation
@@ -84,6 +101,14 @@ namespace HexMapUtil
 
     public static CubeHexLocation operator +(CubeHexLocation a, CubeHexLocation b)
       => new CubeHexLocation(a.x + b.x, a.y + b.y, a.z + b.z);
+
+    public static CubeHexLocation operator *(CubeHexLocation a, int b)
+      => new CubeHexLocation(a.x * b, a.y * b, a.z * b);
+
+    public override string ToString()
+    {
+      return "[ " + x.ToString() + ", " + y.ToString() + ", " + z.ToString() + " ]";
+    }
   }
 
   public struct PathToHex
