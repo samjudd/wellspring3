@@ -26,9 +26,10 @@ public class HUD : CanvasLayer
       _actionPoints.Add((TextureProgress)actionPoints[i]);
   }
 
-  public void UpdateTurn(int turn)
+  public void UpdateTurn(int turn, string letter)
   {
-    _turnCounter.Text = "Turn: " + turn.ToString();
+    int dispTurn = (int)Mathf.Ceil(turn / 2.0f);
+    _turnCounter.Text = "Turn: " + dispTurn.ToString() + letter;
   }
 
   public void UpdateHP(int HP)

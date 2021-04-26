@@ -4,27 +4,31 @@ using HexMapUtil;
 
 public class GameManager : Node2D
 {
-  [Export]
-  public int _char1StartX = 0;
-  [Export]
-  public int _char1StartY = 0;
-
-  private List<Character> _characters = new List<Character>();
+  private Dictionary<int, Character> _friendly = new Dictionary<int, Character>();
+  private Dictionary<int, Character> _enemy = new Dictionary<int, Character>();
   private HexTileMap _map;
   private HUD _HUD;
   private int _turn = 1;
+  private string _turnLetter = "a";
 
-  private Character _selectedCharacter = new Character(Constants.NOCHARACTER);
+  private Character _selectedCharacter = null;
 
   public override void _Ready()
   {
-    _characters.Add(GetNode<Character>("character"));
     _map = GetNode<HexTileMap>("HexTileMap");
     _HUD = GetNode<HUD>("HUD");
+    _friendly.Add(0, GetNode<Character>("character"));
+    _enemy.Add(1, GetNode<TestEnemy>("testEnemy"));
 
-    // center character on (0,0) on grid
-    Vector2 location = _map.OddQToWorld(new HexLocation(_char1StartX, _char1StartY));
-    _characters[0].Position = location;
+    // center friendly on (0,0) on grid
+    Vector2 location = _map.OddQToWorld(new HexLocation(_friendly[0]._XStart, _friendly[0]._YStart));
+    _friendly[0].Position = location;
+
+    // center enemy on 3,0
+    location = _map.OddQToWorld(new HexLocation(_enemy[1]._XStart, _enemy[1]._YStart));
+    _enemy[1].Position = location;
+
+    _HUD.UpdateTurn(_turn, _turnLetter);
   }
 
   public override void _Process(float delta)
@@ -32,17 +36,32 @@ public class GameManager : Node2D
     if (Input.IsActionJustPressed("select"))
     {
       int characterID = _map.GetCharacterID(GetGlobalMousePosition());
-      if (characterID != Constants.NOCHARACTER && characterID != _selectedCharacter.ID)
+      if (_friendly.ContainsKey(characterID))
       {
-        _selectedCharacter = _characters[characterID];
-        _selectedCharacter.Select();
-        _HUD.OnSelectCharacter(_selectedCharacter);
+
+        if (_selectedCharacter != null)
+          _selectedCharacter.Deselect();
+
+        if (_selectedCharacter != null && _selectedCharacter.ID == characterID)
+          _selectedCharacter = null;
+        else
+        {
+          _selectedCharacter = _friendly[characterID];
+          _selectedCharacter.Select();
+          _HUD.OnSelectCharacter(_selectedCharacter);
+        }
       }
-      else if (_selectedCharacter.ID != Constants.NOCHARACTER)
+      else if (_enemy.ContainsKey(characterID))
+      {
+        if (_selectedCharacter != null)
+          _selectedCharacter.Deselect();
+
+        // show stats on UI
+      }
+      else if (_selectedCharacter != null)
       {
         _selectedCharacter.Deselect();
-        _selectedCharacter = new Character(Constants.NOCHARACTER);
-        // need to hide character UI altogether when nothing is selected
+        _selectedCharacter = null;
       }
     }
     else if (Input.IsActionJustPressed("pathfind") && _selectedCharacter != null)
@@ -55,9 +74,13 @@ public class GameManager : Node2D
     else if (Input.IsActionJustPressed("end_turn"))
     {
       _turn += 1;
-      _HUD.UpdateTurn(_turn);
+      if (_turnLetter == "a")
+        _turnLetter = "b";
+      else
+        _turnLetter = "a";
+      _HUD.UpdateTurn(_turn, _turnLetter);
       // update all characters onturnstart 
-      foreach (Character character in _characters)
+      foreach (Character character in _friendly.Values)
       {
         character.OnTurnEnd();
         character.OnTurnStart();

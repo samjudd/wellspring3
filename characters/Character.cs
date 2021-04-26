@@ -14,6 +14,12 @@ public class Character : Sprite
   public int _attackCost = 4;
   [Export]
   public int[] _attackRange = new int[] { 1 };
+  [Export]
+  public bool _isFriendly = true;
+  [Export]
+  public int _XStart = 0;
+  [Export]
+  public int _YStart = 0;
 
   public int HP
   {
@@ -32,9 +38,7 @@ public class Character : Sprite
     get { return _characterID; }
   }
 
-  private int _characterID = 0;
-  public static int _XStart = 0;
-  public static int _YStart = 0;
+  protected int _characterID = 0;
   public HexLocation _location { get; private set; }
 
   private HexTileMap _hexMap;
