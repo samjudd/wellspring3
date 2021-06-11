@@ -13,9 +13,9 @@ public class Character : Sprite
   [Export]
   public int _attackCost = 4;
   [Export]
-  public int[] _attackRange = new int[] { 1 };
+  public int[] _attackDistance = new int[] { 1 };
   [Export]
-  public bool _isFriendly = true;
+  public int _attackDamage = 10;
   [Export]
   public int _XStart = 0;
   [Export]
@@ -40,11 +40,14 @@ public class Character : Sprite
 
   protected int _characterID = 0;
   public HexLocation _location { get; private set; }
+  public GameUtil.Faction _faction = GameUtil.Faction.FRIENDLY;
 
+  public GameManager _gameManager;
   private HexTileMap _hexMap;
   private int _currentAP;
   private int _currentHP;
-  private System.Collections.Generic.Dictionary<HexLocation, PathToHex> _movementRange = null;
+  public System.Collections.Generic.Dictionary<HexLocation, PathToHex> _movementRange = null;
+  public List<HexLocation> _attackRange = null;
   private float _moveSpeedPxPerSecond;
 
   private Queue<HexLocation> _moveQueue = new Queue<HexLocation>();
@@ -60,15 +63,18 @@ public class Character : Sprite
   // need empty constructor for godot engine to instantiate with
   public Character() { }
 
-  public Character(int characterID)
+  public Character(int characterID, GameUtil.Faction faction, HexLocation startLocation)
   {
     _characterID = characterID;
+    _faction = faction;
+    _location = startLocation;
   }
 
   public override void _Ready()
   {
     _location = new HexLocation(_XStart, _YStart);
     _hexMap = GetNode<HexTileMap>("../HexTileMap");
+    _gameManager = GetNode<GameManager>("..");
     _currentAP = _maxAP;
     _currentHP = _maxHP;
     // multiply by flat-to-flat distance to get move speed in pixels
@@ -130,6 +136,28 @@ public class Character : Sprite
     }
   }
 
+  public bool Attack(int target)
+  {
+    if (_currentAP >= _attackCost)
+    {
+      _gameManager._characters[target].OnAttack(_attackDamage);
+      _currentAP -= _attackCost;
+      _hexMap.ClearMapLines();
+      Deselect();
+      Select();
+      return true;
+    }
+    else
+      return false;
+  }
+
+  public void OnAttack(int damage)
+  {
+    _currentHP -= damage;
+    Mathf.Clamp(_currentHP, 0, _maxHP);
+    GD.Print("ouch");
+  }
+
   private void MoveSingleStep(HexLocation newLocation)
   {
     if (!_moving)
@@ -154,7 +182,9 @@ public class Character : Sprite
     _selected = true;
     _movementRange = _hexMap.ShowMovementRange(_location, _currentAP);
     if (_currentAP >= _attackCost)
-      _hexMap.ShowAttackRange(_location, new List<int>(_attackRange));
+      _attackRange = _hexMap.ShowAttackRange(_location, new List<int>(_attackDistance));
+    else
+      _attackRange = new List<HexLocation>();
   }
   public void Deselect()
   {

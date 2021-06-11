@@ -1,8 +1,8 @@
 using Godot;
 using Godot.Collections;
-using HexMapUtil;
 using Priority_Queue;
 using System.Collections.Generic;
+using HexMapUtil;
 
 public class HexTileMap : TileMap
 {
