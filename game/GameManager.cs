@@ -53,7 +53,6 @@ public class GameManager : Node2D
     if (Input.IsActionJustPressed("select"))
     {
       int characterID = _map.GetCharacterID(GetGlobalMousePosition());
-      GD.Print(characterID);
       HexLocation location = _map.WorldToOddQ(GetGlobalMousePosition());
       if (_characters.ContainsKey(characterID))
       {
