@@ -4,28 +4,46 @@ using HexMapUtil;
 
 public class GameManager : Node2D
 {
+  [Export]
+  Vector2[] _AStartLocations = new Vector2[5];
+  [Export]
+  Vector2[] _BStartLocations = new Vector2[5];
+
   public Dictionary<int, Character> _characters = new Dictionary<int, Character>();
   private HexTileMap _map;
   private HUD _HUD;
   private int _turn = 1;
-  private string _turnLetter = "a";
+  private string _turnLetter = "A";
+  private GameUtil.Faction _playerFaction = GameUtil.Faction.TEAMA;
+  private GameUtil.Faction _otherFaction = GameUtil.Faction.TEAMB;
 
   private Character _selectedCharacter = null;
+
+  private PackedScene _char1 = ResourceLoader.Load<PackedScene>("res://characters/character.tscn");
+  private PackedScene _enemy1 = ResourceLoader.Load<PackedScene>("res://enemies/testEnemy.tscn");
 
   public override void _Ready()
   {
     _map = GetNode<HexTileMap>("HexTileMap");
     _HUD = GetNode<HUD>("HUD");
-    _characters.Add(0, GetNode<Character>("character"));
-    _characters.Add(1, GetNode<TestEnemy>("testEnemy"));
 
-    // center friendly on (0,0) on grid
-    Vector2 location = _map.OddQToWorld(new HexLocation(_characters[0]._XStart, _characters[0]._YStart));
-    _characters[0].Position = location;
+    // create all the characters to populate the world
+    int ID = 0;
+    for (int i = 0; i < _AStartLocations.Length; i++)
+    {
+      _characters.Add(ID, (Character)_char1.Instance());
+      _characters[ID].Init(ID, GameUtil.Faction.TEAMA, new HexLocation(_AStartLocations[i]));
+      AddChild(_characters[ID]);
+      ID += 1;
+    }
 
-    // center enemy on 3,0
-    location = _map.OddQToWorld(new HexLocation(_characters[1]._XStart, _characters[1]._YStart));
-    _characters[1].Position = location;
+    for (int i = 0; i < _BStartLocations.Length; i++)
+    {
+      _characters.Add(ID, (TestEnemy)_enemy1.Instance());
+      _characters[ID].Init(ID, GameUtil.Faction.TEAMB, new HexLocation(_BStartLocations[i]));
+      AddChild(_characters[ID]);
+      ID += 1;
+    }
 
     _HUD.UpdateTurn(_turn, _turnLetter);
   }
@@ -35,6 +53,7 @@ public class GameManager : Node2D
     if (Input.IsActionJustPressed("select"))
     {
       int characterID = _map.GetCharacterID(GetGlobalMousePosition());
+      GD.Print(characterID);
       HexLocation location = _map.WorldToOddQ(GetGlobalMousePosition());
       if (_characters.ContainsKey(characterID))
       {
@@ -44,14 +63,14 @@ public class GameManager : Node2D
         else if (_selectedCharacter.ID == characterID)
           Deselect();
         // if you clicked another friendly character select that one instead
-        else if (_characters[characterID]._faction == GameUtil.Faction.FRIENDLY)
+        else if (_characters[characterID]._faction == _playerFaction)
           Select(characterID);
         // if you clicked an enemy character attack if in range, select otherwise
-        else if (_characters[characterID]._faction == GameUtil.Faction.ENEMY)
+        else if (_characters[characterID]._faction == _otherFaction)
         {
-          if (_selectedCharacter == null)
+          if (_selectedCharacter == null || _selectedCharacter._faction == _otherFaction)
             Select(characterID);
-          else
+          else // selected character is player faction
           {
             if (_selectedCharacter._attackRange.Contains(location))
             {
@@ -75,30 +94,28 @@ public class GameManager : Node2D
           Deselect();
       }
     }
-    else if (Input.IsActionJustPressed("pathfind") && _selectedCharacter != null)
-    {
-      // move character to selected spot if possible
-      HexLocation selectedHex = _map.WorldToOddQ(GetGlobalMousePosition());
-      _selectedCharacter.Move(selectedHex);
-      _HUD.UpdateAP(_selectedCharacter.AP);
-    }
     else if (Input.IsActionJustPressed("end_turn"))
     {
+      // Update HUD
       _turn += 1;
-      if (_turnLetter == "a")
-        _turnLetter = "b";
+      if (_turnLetter == "A")
+        _turnLetter = "B";
       else
-        _turnLetter = "a";
+        _turnLetter = "A";
       _HUD.UpdateTurn(_turn, _turnLetter);
-      // update all characters onturnstart 
+
+      // run turn start and end functions for all characters
       foreach (Character character in _characters.Values)
       {
-        if (character._faction == GameUtil.Faction.FRIENDLY)
-        {
+        if (character._faction == _playerFaction)
           character.OnTurnEnd();
+        if (character._faction == _otherFaction)
           character.OnTurnStart();
-        }
       }
+      // swap factions so player 2 can control
+      GameUtil.Faction swap = _playerFaction;
+      _playerFaction = _otherFaction;
+      _otherFaction = swap;
     }
   }
 
@@ -108,7 +125,7 @@ public class GameManager : Node2D
       _selectedCharacter.Deselect();
     _selectedCharacter = _characters[newCharacterID];
     // only allow movement if character is friendly
-    if (_characters[newCharacterID]._faction == GameUtil.Faction.FRIENDLY)
+    if (_characters[newCharacterID]._faction == _playerFaction)
       _selectedCharacter.Select();
     _HUD.OnSelectCharacter(_selectedCharacter);
   }

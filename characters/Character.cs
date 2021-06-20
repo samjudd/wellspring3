@@ -16,10 +16,6 @@ public class Character : Sprite
   public int[] _attackDistance = new int[] { 1 };
   [Export]
   public int _attackDamage = 10;
-  [Export]
-  public int _XStart = 0;
-  [Export]
-  public int _YStart = 0;
 
   public int HP
   {
@@ -40,7 +36,7 @@ public class Character : Sprite
 
   protected int _characterID = 0;
   public HexLocation _location { get; private set; }
-  public GameUtil.Faction _faction = GameUtil.Faction.FRIENDLY;
+  public GameUtil.Faction _faction = GameUtil.Faction.TEAMA;
 
   public GameManager _gameManager;
   private HexTileMap _hexMap;
@@ -60,19 +56,10 @@ public class Character : Sprite
   private HexLocation _previewHex;
   private bool _selected = false;
 
-  // need empty constructor for godot engine to instantiate with
   public Character() { }
-
-  public Character(int characterID, GameUtil.Faction faction, HexLocation startLocation)
-  {
-    _characterID = characterID;
-    _faction = faction;
-    _location = startLocation;
-  }
 
   public override void _Ready()
   {
-    _location = new HexLocation(_XStart, _YStart);
     _hexMap = GetNode<HexTileMap>("../HexTileMap");
     _gameManager = GetNode<GameManager>("..");
     _currentAP = _maxAP;
@@ -82,6 +69,8 @@ public class Character : Sprite
 
     // set map to know location of this character
     _hexMap._map.GetHexTile(_location).AddCharacter(_characterID);
+    // move character to map location
+    Position = _hexMap.OddQToWorld(_location);
 
     _previewHex = _location;
   }
@@ -121,6 +110,13 @@ public class Character : Sprite
     }
   }
 
+  public void Init(int characterID, GameUtil.Faction faction, HexLocation startLocation)
+  {
+    _characterID = characterID;
+    _faction = faction;
+    _location = startLocation;
+  }
+
   public bool Move(HexLocation newLocation)
   {
     List<HexLocation> path = Util.HexPathfind(_location, newLocation, _movementRange);
@@ -155,7 +151,8 @@ public class Character : Sprite
   {
     _currentHP -= damage;
     Mathf.Clamp(_currentHP, 0, _maxHP);
-    GD.Print("ouch");
+    if (_currentHP == 0)
+      Die();
   }
 
   private void MoveSingleStep(HexLocation newLocation)
@@ -175,6 +172,12 @@ public class Character : Sprite
     _hexMap._map.GetHexTile(_location).RemoveCharacter();
     _location = newLocation;
     _hexMap._map.GetHexTile(_location).AddCharacter(_characterID);
+  }
+
+  private void Die()
+  {
+    _hexMap._map.GetHexTile(_location).RemoveCharacter();
+    QueueFree();
   }
 
   public void Select()
