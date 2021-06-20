@@ -8,7 +8,8 @@ public class HUD : CanvasLayer
   private Label _turnCounter;
   private TextureProgress _hpBar;
   private Label _hpLabel;
-  private List<TextureProgress> _actionPoints = new List<TextureProgress>();
+  private TextureProgress _apBar;
+  private Label _apLabel;
 
   public override void _Ready()
   {
@@ -18,12 +19,10 @@ public class HUD : CanvasLayer
       "HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/HitPointsHBox/CenterContainer/HPProgress");
     _hpLabel = GetNode<Label>(
       "HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/HitPointsHBox/CenterContainer/CurrentHPLabel");
-    HBoxContainer actionPointsCont = GetNode<HBoxContainer>(
-      "HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/ActionPointsHBox");
-    Array actionPoints = actionPointsCont.GetChildren();
-    // start at 1 since index 0 should always be label
-    for (int i = 1; i < actionPoints.Count; i++)
-      _actionPoints.Add((TextureProgress)actionPoints[i]);
+    _apBar = GetNode<TextureProgress>(
+      "HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/ActionPointsHBox/CenterContainer/APProgress");
+    _apLabel = GetNode<Label>(
+      "HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/ActionPointsHBox/CenterContainer/CurrentAPLabel");
   }
 
   public void UpdateTurn(int turn, string letter)
@@ -41,13 +40,9 @@ public class HUD : CanvasLayer
 
   public void UpdateAP(int AP)
   {
-    for (int i = 0; i < _actionPoints.Count; i++)
-    {
-      if (i < AP)
-        _actionPoints[i].Value = 1;
-      else
-        _actionPoints[i].Value = 0;
-    }
+    // textureProgress will clamp if AP > maxAP
+    _apBar.Value = AP;
+    _apLabel.Text = AP.ToString() + "/" + _apBar.MaxValue.ToString();
   }
 
   public void OnSelectCharacter(Character character)
