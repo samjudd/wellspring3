@@ -48,8 +48,8 @@ public class HUD : CanvasLayer
   public void OnSelectCharacter(Character character)
   {
     // update HP bar 
-    _hpBar.MaxValue = character._maxHP;
-    UpdateHP(character.HP);
-    UpdateAP(character.AP);
+    _hpBar.MaxValue = character.HP.maxValue;
+    UpdateHP(character.HP.value);
+    UpdateAP(character.AP.value);
   }
 }

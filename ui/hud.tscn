@@ -1,7 +1,5 @@
 [gd_scene load_steps=16 format=2]
 
-[ext_resource path="res://resource/icon.png" type="Texture" id=1]
-[ext_resource path="res://resource/custom/hud/minimap_placeholder_15.png" type="Texture" id=2]
 [ext_resource path="res://resource/custom/hud/character_info_background.png" type="Texture" id=3]
 [ext_resource path="res://resource/Major_Mono_Display/MajorMonoDisplay-Regular.ttf" type="DynamicFontData" id=4]
 [ext_resource path="res://resource/custom/hud/action_point_bar_empty.png" type="Texture" id=5]
@@ -17,6 +15,9 @@ size = 30
 use_filter = true
 font_data = ExtResource( 4 )
 
+[sub_resource type="DynamicFont" id=8]
+font_data = ExtResource( 4 )
+
 [sub_resource type="DynamicFont" id=3]
 size = 18
 use_mipmaps = true
@@ -29,9 +30,15 @@ use_mipmaps = true
 use_filter = true
 font_data = ExtResource( 4 )
 
-[sub_resource type="StyleBoxEmpty" id=5]
+[sub_resource type="DynamicFont" id=5]
+size = 40
+font_data = ExtResource( 4 )
 
 [sub_resource type="StyleBoxEmpty" id=6]
+
+[sub_resource type="DynamicFont" id=9]
+size = 30
+font_data = ExtResource( 4 )
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource( 9 )
@@ -74,7 +81,7 @@ __meta__ = {
 margin_left = 3.0
 margin_top = 5.0
 margin_right = 282.0
-margin_bottom = 83.0
+margin_bottom = 188.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -90,10 +97,24 @@ margin_bottom = 30.0
 custom_fonts/font = SubResource( 2 )
 text = "Turn: 1A"
 
-[node name="HitPointsHBox" type="HBoxContainer" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner"]
+[node name="NameHBox" type="HBoxContainer" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner"]
 margin_top = 34.0
 margin_right = 279.0
-margin_bottom = 54.0
+margin_bottom = 51.0
+
+[node name="Name" type="Label" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/NameHBox"]
+margin_right = 48.0
+margin_bottom = 17.0
+custom_fonts/font = SubResource( 8 )
+text = "Name"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HitPointsHBox" type="HBoxContainer" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner"]
+margin_top = 55.0
+margin_right = 279.0
+margin_bottom = 75.0
 
 [node name="HPLabel" type="Label" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/HitPointsHBox"]
 margin_right = 39.0
@@ -130,9 +151,9 @@ __meta__ = {
 }
 
 [node name="ActionPointsHBox" type="HBoxContainer" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner"]
-margin_top = 58.0
+margin_top = 79.0
 margin_right = 279.0
-margin_bottom = 78.0
+margin_bottom = 99.0
 custom_constants/separation = 4
 
 [node name="APLabel" type="Label" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/ActionPointsHBox"]
@@ -169,53 +190,142 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="AttackDamageHBox" type="HBoxContainer" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner"]
+margin_top = 103.0
+margin_right = 279.0
+margin_bottom = 120.0
+
+[node name="Label" type="Label" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/AttackDamageHBox"]
+margin_right = 84.0
+margin_bottom = 17.0
+custom_fonts/font = SubResource( 8 )
+text = "Attack:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Stat" type="Label" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/AttackDamageHBox"]
+margin_left = 88.0
+margin_right = 112.0
+margin_bottom = 17.0
+custom_fonts/font = SubResource( 8 )
+text = "20"
+
+[node name="ArmorHBox" type="HBoxContainer" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner"]
+margin_top = 124.0
+margin_right = 279.0
+margin_bottom = 141.0
+
+[node name="Label" type="Label" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/ArmorHBox"]
+margin_right = 72.0
+margin_bottom = 17.0
+custom_fonts/font = SubResource( 8 )
+text = "Armor:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Stat" type="Label" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/ArmorHBox"]
+margin_left = 76.0
+margin_right = 100.0
+margin_bottom = 17.0
+custom_fonts/font = SubResource( 8 )
+text = "0 "
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SpellPowerHBox" type="HBoxContainer" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner"]
+margin_top = 145.0
+margin_right = 279.0
+margin_bottom = 162.0
+
+[node name="Label" type="Label" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/SpellPowerHBox"]
+margin_right = 144.0
+margin_bottom = 17.0
+custom_fonts/font = SubResource( 8 )
+text = "Spell Power:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Stat" type="Label" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/SpellPowerHBox"]
+margin_left = 148.0
+margin_right = 172.0
+margin_bottom = 17.0
+custom_fonts/font = SubResource( 8 )
+text = "0 "
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SpellResistHBox" type="HBoxContainer" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner"]
+margin_top = 166.0
+margin_right = 279.0
+margin_bottom = 183.0
+
+[node name="Label" type="Label" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/SpellResistHBox"]
+margin_right = 156.0
+margin_bottom = 17.0
+custom_fonts/font = SubResource( 8 )
+text = "Spell Resist:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Stat" type="Label" parent="HUD/CharInfoVBox/CharInfo/MarginContainer/CharInfoVBoxInner/SpellResistHBox"]
+margin_left = 160.0
+margin_right = 184.0
+margin_bottom = 17.0
+custom_fonts/font = SubResource( 8 )
+text = "0 "
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="Center" type="VBoxContainer" parent="HUD"]
 margin_left = 292.0
-margin_right = 1628.0
+margin_right = 1812.0
 margin_bottom = 1080.0
 size_flags_horizontal = 3
 
-[node name="CharacterList" type="CenterContainer" parent="HUD/Center"]
-margin_right = 1336.0
-margin_bottom = 128.0
+[node name="Filler" type="PanelContainer" parent="HUD/Center"]
+margin_right = 1520.0
+margin_bottom = 1030.0
+size_flags_vertical = 3
+custom_styles/panel = SubResource( 1 )
 
-[node name="char1" type="TextureRect" parent="HUD/Center/CharacterList"]
+[node name="CenterContainer" type="CenterContainer" parent="HUD/Center"]
+margin_top = 1034.0
+margin_right = 1520.0
+margin_bottom = 1080.0
+
+[node name="Button" type="Button" parent="HUD/Center/CenterContainer"]
 margin_left = 604.0
-margin_right = 732.0
-margin_bottom = 128.0
-texture = ExtResource( 1 )
+margin_right = 916.0
+margin_bottom = 46.0
+custom_fonts/font = SubResource( 5 )
+text = "Cast Spell"
 
 [node name="MapAndMenuVBox" type="VBoxContainer" parent="HUD"]
-margin_left = 1632.0
+margin_left = 1816.0
 margin_right = 1920.0
 margin_bottom = 1080.0
 
 [node name="MenuHBox" type="HBoxContainer" parent="HUD/MapAndMenuVBox"]
-margin_right = 288.0
-margin_bottom = 20.0
+margin_right = 104.0
+margin_bottom = 36.0
 
 [node name="Filler" type="PanelContainer" parent="HUD/MapAndMenuVBox/MenuHBox"]
-margin_right = 233.0
-margin_bottom = 20.0
+margin_bottom = 36.0
 size_flags_horizontal = 3
-custom_styles/panel = SubResource( 5 )
-
-[node name="MenuButton" type="MenuButton" parent="HUD/MapAndMenuVBox/MenuHBox"]
-margin_left = 237.0
-margin_right = 288.0
-margin_bottom = 20.0
-disabled = true
-text = "MENU"
-
-[node name="Filler" type="PanelContainer" parent="HUD/MapAndMenuVBox"]
-margin_top = 24.0
-margin_right = 288.0
-margin_bottom = 788.0
-size_flags_vertical = 3
 custom_styles/panel = SubResource( 6 )
 
-[node name="Map" type="TextureRect" parent="HUD/MapAndMenuVBox"]
-margin_top = 792.0
-margin_right = 288.0
-margin_bottom = 1080.0
-texture = ExtResource( 2 )
+[node name="MenuButton" type="MenuButton" parent="HUD/MapAndMenuVBox/MenuHBox"]
+margin_left = 4.0
+margin_right = 104.0
+margin_bottom = 36.0
+custom_fonts/font = SubResource( 9 )
+disabled = true
+text = "MENU"
+flat = false

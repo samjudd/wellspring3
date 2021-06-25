@@ -8,7 +8,7 @@
 [node name="game" type="Node2D"]
 script = ExtResource( 3 )
 _AStartLocations = PoolVector2Array( 0, 6, 0, 7, 0, 8, 1, 6, 1, 7 )
-_BStartLocations = PoolVector2Array( 19, 6, 19, 7, 20, 6, 20, 7, 20, 8 )
+_BStartLocations = PoolVector2Array( 9, 6, 9, 7, 10, 6, 10, 7, 10, 8 )
 
 [node name="HexTileMap" parent="." instance=ExtResource( 2 )]
 

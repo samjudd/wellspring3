@@ -74,7 +74,7 @@ public class GameManager : Node2D
             if (_selectedCharacter._attackRange.Contains(location))
             {
               _selectedCharacter.Attack(characterID);
-              _HUD.UpdateAP(_selectedCharacter.AP);
+              _HUD.UpdateAP(_selectedCharacter.AP.value);
             }
             else
               Select(characterID);
@@ -87,7 +87,7 @@ public class GameManager : Node2D
         if (_selectedCharacter._movementRange.ContainsKey(location))
         {
           _selectedCharacter.Move(location);
-          _HUD.UpdateAP(_selectedCharacter.AP);
+          _HUD.UpdateAP(_selectedCharacter.AP.value);
         }
         else
           Deselect();

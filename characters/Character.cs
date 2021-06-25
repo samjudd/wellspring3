@@ -5,29 +5,35 @@ using HexMapUtil;
 public class Character : Sprite
 {
   [Export]
-  public int _maxAP = 10;
+  public string _characterName = "baseChar";
   [Export]
-  public int _maxHP = 100;
+  public int _baseAP = 10;
+  [Export]
+  public int _baseHP = 100;
+  [Export]
+  public int _baseAttackCost = 4;
+  [Export]
+  public int _baseAttackDamage = 10;
+  [Export]
+  public int[] _baseAttackDistance = new int[] { 1 };
+  [Export]
+  public int _baseArmor = 0;
+  [Export]
+  public int _baseSpellPower = 0;
+  [Export]
+  public int _baseSpellResist = 0;
+
   [Export]
   public float _moveSpeedTilesPerSecond = 3.0f;
-  [Export]
-  public int _attackCost = 4;
-  [Export]
-  public int[] _attackDistance = new int[] { 1 };
-  [Export]
-  public int _attackDamage = 10;
 
-  public int HP
-  {
-    get { return _currentHP; }
-    set { _currentHP = Mathf.Clamp(value, 0, _maxHP); }
-  }
+  public PointAttribute HP { get; private set; }
+  public PointAttribute AP { get; private set; }
 
-  public int AP
-  {
-    get { return _currentAP; }
-    set { _currentAP = Mathf.Clamp(value, 0, _maxAP); }
-  }
+  public StatAttribute AttackDamage { get; private set; }
+  public StatAttribute AttackCost { get; private set; }
+  public StatAttribute Armor { get; private set; }
+  public StatAttribute SpellPower { get; private set; }
+  public StatAttribute SpellResist { get; private set; }
 
   public int ID
   {
@@ -39,9 +45,7 @@ public class Character : Sprite
   public GameUtil.Faction _faction = GameUtil.Faction.TEAMA;
 
   public GameManager _gameManager;
-  private HexTileMap _hexMap;
-  private int _currentAP;
-  private int _currentHP;
+  protected HexTileMap _hexMap;
   public System.Collections.Generic.Dictionary<HexLocation, PathToHex> _movementRange = null;
   public List<HexLocation> _attackRange = null;
   private float _moveSpeedPxPerSecond;
@@ -62,8 +66,6 @@ public class Character : Sprite
   {
     _hexMap = GetNode<HexTileMap>("../HexTileMap");
     _gameManager = GetNode<GameManager>("..");
-    _currentAP = _maxAP;
-    _currentHP = _maxHP;
     // multiply by flat-to-flat distance to get move speed in pixels
     _moveSpeedPxPerSecond = _moveSpeedTilesPerSecond * _hexMap._hexDimensionsPx.y;
 
@@ -73,6 +75,15 @@ public class Character : Sprite
     Position = _hexMap.OddQToWorld(_location);
 
     _previewHex = _location;
+
+    // initialize all stats
+    HP = new PointAttribute(_baseHP);
+    AP = new PointAttribute(_baseAP);
+    AttackDamage = new StatAttribute(_baseAttackDamage);
+    AttackCost = new StatAttribute(_baseAttackCost);
+    Armor = new StatAttribute(_baseArmor);
+    SpellPower = new StatAttribute(_baseSpellPower);
+    SpellResist = new StatAttribute(_baseSpellResist);
   }
 
   public override void _Process(float delta)
@@ -125,7 +136,7 @@ public class Character : Sprite
     else
     {
       foreach (HexLocation hex in path)
-        _currentAP -= _hexMap._map.GetHexTile(hex).movement;
+        AP.value -= _hexMap._map.GetHexTile(hex).movement;
       _moveQueue = new Queue<HexLocation>(path);
       MoveSingleStep(_moveQueue.Dequeue());
       return true;
@@ -134,10 +145,10 @@ public class Character : Sprite
 
   public bool Attack(int target)
   {
-    if (_currentAP >= _attackCost)
+    if (AP.value >= AttackCost.value)
     {
-      _gameManager._characters[target].OnAttack(_attackDamage);
-      _currentAP -= _attackCost;
+      _gameManager._characters[target].OnAttack(AttackDamage.value);
+      AP.value -= AttackCost.value;
       _hexMap.ClearMapLines();
       Deselect();
       Select();
@@ -147,11 +158,12 @@ public class Character : Sprite
       return false;
   }
 
+  public virtual void CastAbility() { }
+
   public void OnAttack(int damage)
   {
-    _currentHP -= damage;
-    Mathf.Clamp(_currentHP, 0, _maxHP);
-    if (_currentHP == 0)
+    HP.value -= damage;
+    if (HP.value == 0)
       Die();
   }
 
@@ -183,9 +195,9 @@ public class Character : Sprite
   public void Select()
   {
     _selected = true;
-    _movementRange = _hexMap.ShowMovementRange(_location, _currentAP);
-    if (_currentAP >= _attackCost)
-      _attackRange = _hexMap.ShowAttackRange(_location, new List<int>(_attackDistance));
+    _movementRange = _hexMap.ShowMovementRange(_location, AP.value);
+    if (AP.value >= AttackCost.value)
+      _attackRange = _hexMap.ShowAttackRange(_location, new List<int>(_baseAttackDistance));
     else
       _attackRange = new List<HexLocation>();
   }
@@ -200,7 +212,7 @@ public class Character : Sprite
 
   public void OnTurnStart()
   {
-    _currentAP = _maxAP;
+    AP.value = AP.maxValue;
   }
 
   public void OnTurnEnd()

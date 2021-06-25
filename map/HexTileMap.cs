@@ -213,7 +213,7 @@ public class HexTileMap : TileMap
     return result;
   }
 
-  private List<HexLocation> GetRing(HexLocation center, int radius)
+  public List<HexLocation> GetRing(HexLocation center, int radius)
   {
     if (radius > 0)
     {
@@ -232,6 +232,18 @@ public class HexTileMap : TileMap
     }
     else
       return new List<HexLocation>();
+  }
+
+  public List<int> GetCharacterIDs(List<HexLocation> area)
+  {
+    List<int> result = new List<int>();
+    foreach (HexLocation loc in area)
+    {
+      HexTile tile = _map.GetHexTile(loc);
+      if (tile.characterID != Constants.NOCHARACTER)
+        result.Add(tile.characterID);
+    }
+    return result;
   }
 
   private void PrintText(string text, Vector2 position)
