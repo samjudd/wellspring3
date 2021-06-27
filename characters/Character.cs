@@ -7,6 +7,8 @@ public class Character : Sprite
   [Export]
   public string _characterName = "baseChar";
   [Export]
+  public string _abilityName = "baseAblty";
+  [Export]
   public int _baseAP = 10;
   [Export]
   public int _baseHP = 100;
@@ -22,6 +24,10 @@ public class Character : Sprite
   public int _baseSpellPower = 0;
   [Export]
   public int _baseSpellResist = 0;
+  [Export]
+  public int _baseAbilityCooldown = 1;
+  [Export]
+  public int _baseAbilityCost = 6;
 
   [Export]
   public float _moveSpeedTilesPerSecond = 3.0f;
@@ -34,6 +40,9 @@ public class Character : Sprite
   public StatAttribute Armor { get; private set; }
   public StatAttribute SpellPower { get; private set; }
   public StatAttribute SpellResist { get; private set; }
+  public StatAttribute AbilityCost { get; private set; }
+
+  public Cooldown AbilityCD { get; private set; }
 
   public int ID
   {
@@ -84,6 +93,7 @@ public class Character : Sprite
     Armor = new StatAttribute(_baseArmor);
     SpellPower = new StatAttribute(_baseSpellPower);
     SpellResist = new StatAttribute(_baseSpellResist);
+    AbilityCD = new Cooldown(_baseAbilityCooldown);
   }
 
   public override void _Process(float delta)
@@ -213,6 +223,7 @@ public class Character : Sprite
   public void OnTurnStart()
   {
     AP.value = AP.maxValue;
+    AbilityCD.OnTurnStart();
   }
 
   public void OnTurnEnd()

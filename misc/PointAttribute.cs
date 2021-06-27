@@ -1,12 +1,15 @@
 using Godot;
 using System.Collections.Generic;
 
-public class PointAttribute
+public class PointAttribute : Node
 {
   public int value
   {
     get { return _currentValue; }
-    set { _currentValue = Mathf.Clamp(value, 0, _maxValue); }
+    set
+    {
+      _currentValue = Mathf.Clamp(value, 0, _maxValue);
+    }
   }
 
   public int maxValue

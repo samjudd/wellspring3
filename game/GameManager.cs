@@ -21,6 +21,7 @@ public class GameManager : Node2D
 
   private PackedScene _char1 = ResourceLoader.Load<PackedScene>("res://characters/character.tscn");
   private PackedScene _enemy1 = ResourceLoader.Load<PackedScene>("res://enemies/testEnemy.tscn");
+  private PackedScene _lion = ResourceLoader.Load<PackedScene>("res://characters/lion.tscn");
 
   public override void _Ready()
   {
@@ -29,13 +30,19 @@ public class GameManager : Node2D
 
     // create all the characters to populate the world
     int ID = 0;
-    for (int i = 0; i < _AStartLocations.Length; i++)
+    for (int i = 0; i < _AStartLocations.Length - 1; i++)
     {
       _characters.Add(ID, (Character)_char1.Instance());
       _characters[ID].Init(ID, GameUtil.Faction.TEAMA, new HexLocation(_AStartLocations[i]));
       AddChild(_characters[ID]);
       ID += 1;
     }
+
+    // lion character
+    _characters.Add(ID, (Lion)_lion.Instance());
+    _characters[ID].Init(ID, GameUtil.Faction.TEAMA, new HexLocation(_AStartLocations[4]));
+    AddChild(_characters[ID]);
+    ID += 1;
 
     for (int i = 0; i < _BStartLocations.Length; i++)
     {
@@ -74,7 +81,7 @@ public class GameManager : Node2D
             if (_selectedCharacter._attackRange.Contains(location))
             {
               _selectedCharacter.Attack(characterID);
-              _HUD.UpdateAP(_selectedCharacter.AP.value);
+              _HUD.UpdateAP(_selectedCharacter.AP.value, _selectedCharacter.AP.maxValue);
             }
             else
               Select(characterID);
@@ -87,7 +94,7 @@ public class GameManager : Node2D
         if (_selectedCharacter._movementRange.ContainsKey(location))
         {
           _selectedCharacter.Move(location);
-          _HUD.UpdateAP(_selectedCharacter.AP.value);
+          _HUD.UpdateAP(_selectedCharacter.AP.value, _selectedCharacter.AP.maxValue);
         }
         else
           Deselect();
@@ -118,6 +125,12 @@ public class GameManager : Node2D
     }
   }
 
+  public void CastCharacterAbility()
+  {
+    if (_selectedCharacter != null)
+      _selectedCharacter.CastAbility();
+  }
+
   private void Select(int newCharacterID)
   {
     if (_selectedCharacter != null)
@@ -134,6 +147,6 @@ public class GameManager : Node2D
     if (_selectedCharacter != null)
       _selectedCharacter.Deselect();
     _selectedCharacter = null;
-    // change HUD to have nothing selected
+    _HUD.OnDeselectCharacter();
   }
 }

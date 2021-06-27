@@ -1,7 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 
-public class StatAttribute
+public class StatAttribute : Node
 {
   public int value
   {
