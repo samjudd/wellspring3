@@ -125,6 +125,17 @@ public class GameManager : Node2D
     }
   }
 
+  public List<HexLocation> GetOtherLocations()
+  {
+    List<HexLocation> result = new List<HexLocation>();
+    foreach (Character character in _characters.Values)
+    {
+      if (character._faction == _otherFaction)
+        result.Add(character._location);
+    }
+    return result;
+  }
+
   public void CastCharacterAbility()
   {
     if (_selectedCharacter != null)

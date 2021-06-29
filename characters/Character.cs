@@ -205,7 +205,7 @@ public class Character : Sprite
   public void Select()
   {
     _selected = true;
-    _movementRange = _hexMap.ShowMovementRange(_location, AP.value);
+    _movementRange = _hexMap.ShowMovementRange(this);
     if (AP.value >= AttackCost.value)
       _attackRange = _hexMap.ShowAttackRange(_location, new List<int>(_baseAttackDistance));
     else

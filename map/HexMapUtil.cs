@@ -42,11 +42,6 @@ namespace HexMapUtil
       return GetPathCost(path, hexPaths);
     }
 
-    public static Vector2 HexLocToVec2(HexLocation location)
-    {
-      return new Vector2(location.x, location.y);
-    }
-
     public static CubeHexLocation OddQToCube(HexLocation oddQCoordinates)
     {
       int col = oddQCoordinates.x;
@@ -86,6 +81,31 @@ namespace HexMapUtil
         rz = -rx - ry;
 
       return new CubeHexLocation(rx, ry, rz);
+    }
+
+    public static int HexDistance(CubeHexLocation a, CubeHexLocation b)
+    {
+      return (Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y) + Mathf.Abs(a.z - b.z)) / 2;
+    }
+
+    public static int HexDistance(HexLocation a, HexLocation b)
+    {
+      CubeHexLocation aCube = OddQToCube(a);
+      CubeHexLocation bCube = OddQToCube(b);
+      return HexDistance(aCube, bCube);
+    }
+
+    public static float GetTravelAngleDeg(HexLocation origin, HexLocation hex1, HexLocation hex2)
+    {
+      // convert to cube
+      CubeHexLocation originCube = Util.OddQToCube(origin);
+      CubeHexLocation hex1Cube = Util.OddQToCube(hex1);
+      CubeHexLocation hex2Cube = Util.OddQToCube(hex2);
+
+      // get angle between cube vectors
+      Vector3 origin2Hex1 = hex1Cube.vector3 - originCube.vector3;
+      Vector3 origin2Hex2 = hex2Cube.vector3 - originCube.vector3;
+      return Mathf.Deg2Rad(origin2Hex1.AngleTo(origin2Hex2));
     }
 
     public static void PrintHexList(List<HexLocation> hexList)

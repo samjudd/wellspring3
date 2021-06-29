@@ -35,15 +35,18 @@ namespace HexMapUtil
   public struct HexLocation
   {
     public int x, y;
+    public Vector2 vector2;
     public HexLocation(int x, int y)
     {
       this.x = x;
       this.y = y;
+      this.vector2 = new Vector2(x, y);
     }
     public HexLocation(Vector2 vec)
     {
       this.x = Mathf.RoundToInt(vec.x);
       this.y = Mathf.RoundToInt(vec.y);
+      this.vector2 = new Vector2(this.x, this.y);
     }
     public static bool operator ==(HexLocation a, HexLocation b)
     {
@@ -80,23 +83,27 @@ namespace HexMapUtil
   public struct CubeHexLocation
   {
     public int x, y, z;
+    public Vector3 vector3;
     public CubeHexLocation(int x, int y, int z)
     {
       this.x = x;
       this.y = y;
       this.z = z;
+      this.vector3 = new Vector3(x, y, z);
     }
     public CubeHexLocation(float x, float y, float z)
     {
       this.x = Mathf.RoundToInt(x);
       this.y = Mathf.RoundToInt(y);
       this.z = Mathf.RoundToInt(z);
+      this.vector3 = new Vector3(this.x, this.y, this.z);
     }
     public CubeHexLocation(Vector3 vec)
     {
       this.x = Mathf.RoundToInt(vec.x);
       this.y = Mathf.RoundToInt(vec.y);
       this.z = Mathf.RoundToInt(vec.z);
+      this.vector3 = new Vector3(this.x, this.y, this.z);
     }
 
     public static CubeHexLocation operator +(CubeHexLocation a, CubeHexLocation b)

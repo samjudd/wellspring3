@@ -15,9 +15,13 @@ public class HexTileMap : TileMap
   private List<Line2D> _mapLines = new List<Line2D>();
   private List<HexLocation> _moveHightlight = new List<HexLocation>();
   private List<HexLocation> _attackHightlight = new List<HexLocation>();
+  // link to gameManager
+  private GameManager _gameManager;
 
   public override void _Ready()
   {
+    // get reference to GameManager
+    _gameManager = GetNode<GameManager>("..");
     _hexSizePx = _hexDimensionsPx.x / 2f;
 
     // get bounds of tilemap
@@ -43,13 +47,13 @@ public class HexTileMap : TileMap
     }
   }
 
-  public System.Collections.Generic.Dictionary<HexLocation, PathToHex> ShowMovementRange(HexLocation tile, int movement)
+  public System.Collections.Generic.Dictionary<HexLocation, PathToHex> ShowMovementRange(Character character)
   {
     // get which hexes can be reached
-    System.Collections.Generic.Dictionary<HexLocation, PathToHex> reachableHexes = ReachableHexes(tile, movement); ;
+    System.Collections.Generic.Dictionary<HexLocation, PathToHex> reachableHexes = ReachableHexes(character); ;
 
     // highlight all reachable hexes blue
-    _moveHightlight.Add(tile);
+    _moveHightlight.Add(character._location);
     foreach (HexLocation hex in reachableHexes.Keys)
       _moveHightlight.Add(hex);
 
@@ -93,7 +97,7 @@ public class HexTileMap : TileMap
       return Constants.NOCHARACTER;
   }
 
-  private System.Collections.Generic.Dictionary<HexLocation, PathToHex> ReachableHexes(HexLocation hex, int range)
+  private System.Collections.Generic.Dictionary<HexLocation, PathToHex> ReachableHexes(Character character)
   {
     // initialize data storage for dijkstra
     SimplePriorityQueue<HexLocation> frontier = new SimplePriorityQueue<HexLocation>();
@@ -102,20 +106,25 @@ public class HexTileMap : TileMap
       new System.Collections.Generic.Dictionary<HexLocation, PathToHex>();
 
     // queue start hex
-    frontier.Enqueue(hex, 0);
+    frontier.Enqueue(character._location, 0);
 
     HexLocation current;
+    bool hasInspireBuff = false;
+    bool hasFearBuff = false;
     while (frontier.Count != 0)
     {
       current = frontier.Dequeue();
       foreach (HexLocation next in GetNeighbors(current))
       {
         int newCost = _map.GetHexTile(next).movement;
+        if (hasInspireBuff && CheckInspireBuff(character, current, next))
+          newCost = Mathf.Max(Mathf.RoundToInt(newCost / 2), 1);
+
         if (hexPathInfo.ContainsKey(current))
           newCost += hexPathInfo[current].costToHex;
 
         // if the cost of going to the new tile is more than the range, end here for that path
-        if (newCost > range)
+        if (newCost > character.AP.value)
           continue;
         else if (!hexPathInfo.ContainsKey(next) || newCost < hexPathInfo[next].costToHex)
         {
@@ -126,6 +135,21 @@ public class HexTileMap : TileMap
       }
     }
     return hexPathInfo;
+  }
+
+  private bool CheckInspireBuff(Character character, HexLocation current, HexLocation next)
+  {
+    bool result = false;
+    foreach (HexLocation enemy in _gameManager.GetOtherLocations())
+    {
+      // need buff object to supply these values
+      if (Util.HexDistance(current, enemy) <= 5 && Util.GetTravelAngleDeg(current, next, enemy) <= 45)
+      {
+        result = true;
+        break;
+      }
+    }
+    return result;
   }
 
   public void HighlightHexes()
@@ -171,7 +195,7 @@ public class HexTileMap : TileMap
 
   public Vector2 OddQToWorld(HexLocation index)
   {
-    return MapToWorld(Util.HexLocToVec2(index)) + Util.HexLocToVec2(_hexDimensionsPx) / 2f;
+    return MapToWorld(index.vector2) + _hexDimensionsPx.vector2 / 2f;
   }
 
   public HexLocation WorldToOddQ(Vector2 location)
